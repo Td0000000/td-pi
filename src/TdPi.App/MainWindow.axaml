@@ -1,0 +1,86 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:TdPi.App.ViewModels"
+        xmlns:v="using:TdPi.App.Views"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1240" d:DesignHeight="820"
+        x:Class="TdPi.App.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="td-pi · Pi 管理器"
+        WindowStartupLocation="CenterScreen"
+        Width="1280" Height="860"
+        MinWidth="1080" MinHeight="680">
+
+    <Grid RowDefinitions="52,*">
+        <!-- 顶部:项目选择 -->
+        <Border Grid.Row="0" Classes="topbar" Padding="12,8">
+            <Grid ColumnDefinitions="Auto,12,Auto,8,*,Auto,Auto,Auto,Auto,Auto">
+                <TextBlock Grid.Column="0" Text="td-pi" FontSize="18" FontWeight="Bold"
+                           VerticalAlignment="Center" Classes="brand"/>
+                <TextBlock Grid.Column="2" Text="当前项目:" VerticalAlignment="Center" Opacity="0.7"/>
+                <ComboBox Grid.Column="4" x:Name="ProjectCombo"
+                          ItemsSource="{Binding RecentProjects}"
+                          SelectedItem="{Binding CurrentProject, Mode=TwoWay}"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Center"/>
+                <Button Grid.Column="5" Content="📁 浏览…" Command="{Binding BrowseProjectCommand}"
+                        Classes="ghost" VerticalAlignment="Center"/>
+                <Button Grid.Column="6" Content="🗑 历史" Command="{Binding ManageProjectsCommand}"
+                        Classes="ghost" VerticalAlignment="Center"/>
+                <Button Grid.Column="7" Content="技能" Command="{Binding NavSkillsCommand}" Classes="nav"/>
+                <Button Grid.Column="8" Content="MCP" Command="{Binding NavMcpCommand}" Classes="nav"/>
+                <Button Grid.Column="9" Content="插件" Command="{Binding NavPluginsCommand}" Classes="nav"/>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1" ColumnDefinitions="190,*">
+            <!-- 侧边导航 -->
+            <Border Classes="sidebar" Grid.Column="0" Padding="0,12">
+                <StackPanel Spacing="4">
+                    <Button Content="▶ 启动预设" Command="{Binding NavLauncherCommand}" Classes="navitem"/>
+                    <Button Content="💬 会话记录" Command="{Binding NavSessionsCommand}" Classes="navitem"/>
+                    <Button Content="🚀 预设管理" Command="{Binding NavPresetsCommand}" Classes="navitem"/>
+                    <Button Content="📘 技能管理" Command="{Binding NavSkillsCommand}" Classes="navitem"/>
+                    <Button Content="🔌 MCP 管理" Command="{Binding NavMcpCommand}" Classes="navitem"/>
+                    <Button Content="🧩 插件管理" Command="{Binding NavPluginsCommand}" Classes="navitem"/>
+                    <Button Content="🧠 自定义模型" Command="{Binding NavModelsCommand}" Classes="navitem"/>
+                    <Button Content="⚙️ 诊断" Command="{Binding NavDiagnosticsCommand}" Classes="navitem"/>
+                    <Separator Margin="12,16"/>
+                    <TextBlock Text="{Binding StatusText}" Opacity="0.6" FontSize="12"
+                               TextWrapping="Wrap" Margin="16,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- 内容区 -->
+            <ContentControl Grid.Column="1" Content="{Binding CurrentPage}">
+                <ContentControl.DataTemplates>
+                    <DataTemplate x:DataType="vm:SkillsViewModel">
+                        <v:SkillsView/>
+                    </DataTemplate>
+                    <DataTemplate x:DataType="vm:McpViewModel">
+                        <v:McpView/>
+                    </DataTemplate>
+                    <DataTemplate x:DataType="vm:PluginsViewModel">
+                        <v:PluginsView/>
+                    </DataTemplate>
+                    <DataTemplate x:DataType="vm:ModelsViewModel">
+                        <v:ModelsView/>
+                    </DataTemplate>
+                    <DataTemplate x:DataType="vm:PresetsViewModel">
+                        <v:PresetsView/>
+                    </DataTemplate>
+                    <DataTemplate x:DataType="vm:PresetLauncherViewModel">
+                        <v:PresetLauncherView/>
+                    </DataTemplate>
+                    <DataTemplate x:DataType="vm:SessionsViewModel">
+                        <v:SessionsView/>
+                    </DataTemplate>
+                    <DataTemplate x:DataType="vm:DiagnosticsViewModel">
+                        <v:DiagnosticsView/>
+                    </DataTemplate>
+                </ContentControl.DataTemplates>
+            </ContentControl>
+        </Grid>
+    </Grid>
+</Window>

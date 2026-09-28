@@ -1,0 +1,94 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TdPi.App.ViewModels"
+             x:Class="TdPi.App.Views.SessionsView"
+             x:DataType="vm:SessionsViewModel">
+
+    <ScrollViewer>
+        <StackPanel Margin="20" Spacing="12">
+            <TextBlock Text="💬 会话记录" Classes="pageTitle"/>
+            <TextBlock Classes="pageDesc"
+                       Text="本机全部 pi 聊天记录(~/.pi/agent/sessions)。自动识别每个会话是否使用了预设:绿色 = 使用预设(显示预设名与注入来源),红色 = 正常启动无预设。可勾选删除,删除后 pi --continue 无法找回。"/>
+
+            <!-- 工具栏 -->
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="🔄 刷新" Command="{Binding RefreshCmdCommand}" Classes="ghost"/>
+                <ComboBox SelectedIndex="{Binding FilterMode}" MinWidth="150" VerticalAlignment="Center">
+                    <ComboBoxItem Content="全部会话"/>
+                    <ComboBoxItem Content="只看使用预设"/>
+                    <ComboBoxItem Content="只看正常启动"/>
+                </ComboBox>
+                <TextBox Watermark="🔎 搜索:会话名 / 项目 / 消息内容 / 预设名"
+                         Text="{Binding SearchText}" MinWidth="260" VerticalAlignment="Center"/>
+                <CheckBox Content="全选" IsChecked="{Binding AllChecked}" VerticalAlignment="Center"
+                          ToolTip.Tip="勾选/取消当前筛选显示的全部会话"/>
+                <Button Content="🗑 删除选中" Command="{Binding DeleteCheckedCommand}" Classes="danger"/>
+                <Button Content="👁 查看" Command="{Binding ViewSelectedCommand}"/>
+                <Button Content="▶ 恢复选中会话" Command="{Binding ResumeSelectedCommand}" Classes="primary"
+                        ToolTip.Tip="在新终端窗口中继续选中的会话(pi --session);用过预设的会话自动恢复预设注入"/>
+                <Button Content="📂 打开位置" Command="{Binding OpenLocationCommand}" Classes="ghost"/>
+            </StackPanel>
+
+            <!-- 汇总 -->
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <Border Classes="badge badge-info" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding SummaryText}"/>
+                </Border>
+                <TextBlock Text="{Binding RootHint}" Opacity="0.45" FontSize="11"
+                           FontFamily="Cascadia Mono, Consolas" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- 列表 -->
+            <Border Classes="card" Padding="12">
+                <ListBox Classes="rowList" x:Name="SessionsGrid"
+                         ItemsSource="{Binding Sessions}"
+                         SelectedItem="{Binding Selected, Mode=TwoWay}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:SessionRowViewModel">
+                            <!-- 两行式:上 = 时间+会话名+预设+条数/大小+操作;下 = 项目+首条消息+模型 -->
+                            <Grid ColumnDefinitions="36,1*,Auto,Auto,Auto" RowDefinitions="Auto,Auto" Margin="0,2">
+                                <CheckBox Grid.Column="0" Grid.RowSpan="2" IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          ToolTip.Tip="勾选后可批量删除"/>
+                                <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding TimeText}" FontSize="11" Opacity="0.7" VerticalAlignment="Center"
+                                               FontFamily="Cascadia Mono, Consolas"/>
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="12.5" VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis" MaxWidth="220" ToolTip.Tip="{Binding Name}"/>
+                                    <Border Classes="badge" Classes.badge-on="{Binding UsedPreset}"
+                                            Classes.badge-off="{Binding !UsedPreset}" VerticalAlignment="Center"
+                                            ToolTip.Tip="{Binding PresetTooltip}">
+                                        <TextBlock Text="{Binding PresetText}"/>
+                                    </Border>
+                                </StackPanel>
+                                <TextBlock Grid.Column="2" Grid.Row="0" Text="{Binding MsgCountText}" FontSize="11" Opacity="0.6"
+                                           VerticalAlignment="Center" Margin="8,0,0,0" ToolTip.Tip="消息数"/>
+                                <TextBlock Grid.Column="3" Grid.Row="0" Text="{Binding SizeText}" FontSize="11" Opacity="0.5"
+                                           VerticalAlignment="Center" Margin="10,0,0,0" ToolTip.Tip="文件大小"/>
+                                <StackPanel Grid.Column="4" Grid.RowSpan="2" Orientation="Horizontal" Spacing="4"
+                                            VerticalAlignment="Center" Margin="10,0,0,0">
+                                    <Button Content="查看" Command="{Binding ViewCommand}" Classes="ghost" Padding="8,2" FontSize="11.5"/>
+                                    <Button Content="▶ 恢复" Command="{Binding ResumeCommand}" Classes="primary" Padding="8,2" FontSize="11.5"/>
+                                    <Button Content="删除" Command="{Binding DeleteCommand}" Classes="danger" Padding="8,2" FontSize="11.5"/>
+                                </StackPanel>
+
+                                <Grid Grid.Column="1" Grid.Row="1" ColumnDefinitions="290,1.5*,Auto" Margin="0,3,0,0">
+                                    <TextBlock Text="{Binding Project}" FontSize="10.5" Opacity="0.55" VerticalAlignment="Center"
+                                               FontFamily="Cascadia Mono, Consolas" TextTrimming="CharacterEllipsis"
+                                               ToolTip.Tip="{Binding Project}"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Preview}" FontSize="11" Opacity="0.8"
+                                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                               ToolTip.Tip="{Binding Preview}"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding Model}" FontSize="10.5" Opacity="0.5"
+                                               VerticalAlignment="Center" FontFamily="Cascadia Mono, Consolas"
+                                               TextTrimming="CharacterEllipsis" MaxWidth="170"
+                                               ToolTip.Tip="{Binding Model}"/>
+                                </Grid>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

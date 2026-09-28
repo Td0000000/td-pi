@@ -1,0 +1,142 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TdPi.App.ViewModels"
+             x:Class="TdPi.App.Views.ModelsView"
+             x:DataType="vm:ModelsViewModel">
+
+    <ScrollViewer>
+        <StackPanel Margin="20" Spacing="12">
+
+            <!-- 标题 -->
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="🧠 自定义模型" Classes="pageTitle"/>
+                <Border Classes="badge badge-info" ToolTip.Tip="点击在资源管理器中定位该文件"
+                        IsVisible="{Binding HasFile}">
+                    <TextBlock Text="~/.pi/agent/models.json"/>
+                </Border>
+            </StackPanel>
+            <TextBlock Text="手动维护 pi 的自定义模型表(~/.pi/agent/models.json)。按「服务商」分组 —— 每组一个 URL + Key,下挂若干模型;采样参数在模型表单里手动填写 JSON、自动拼接进文件,留空用默认。修改后 pi 的 /model 会自动重新加载。"
+                       Classes="pageDesc"/>
+
+            <!-- 未创建文件提示 -->
+            <Border Classes="card" Padding="12,10" IsVisible="{Binding !HasFile}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <Border Classes="badge badge-warn" VerticalAlignment="Center">
+                        <TextBlock Text="⚠ 文件不存在"/>
+                    </Border>
+                    <TextBlock Text="尚未创建 models.json —— 点「➕ 新增服务商」即可自动创建。" VerticalAlignment="Center" Opacity="0.8"/>
+                </StackPanel>
+            </Border>
+
+            <!-- 服务商工具栏 -->
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="➕ 新增服务商" Command="{Binding AddProviderCommand}" Classes="primary"/>
+                <Button Content="✏️ 编辑服务商" Command="{Binding EditProviderCommand}"/>
+                <Button Content="🗑 删除服务商" Command="{Binding RemoveProviderCommand}" Classes="danger"/>
+                <Button Content="📝 编辑原始 JSON" Command="{Binding EditRawCommand}" Classes="ghost"/>
+                <Button Content="📂 打开位置" Command="{Binding OpenLocationCommand}" Classes="ghost"/>
+                <Button Content="🔄 刷新" Command="{Binding RefreshCmdCommand}" Classes="ghost"/>
+            </StackPanel>
+
+            <!-- 服务商列表:一条 = 一个整体(URL + Key + 模型),点整行任意位置选中 -->
+            <ListBox Classes="rowList"
+                     ItemsSource="{Binding Providers}"
+                     SelectedItem="{Binding SelectedProvider, Mode=TwoWay}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ModelProviderRowViewModel">
+                        <Grid ColumnDefinitions="220,170,1.6*,210,66" VerticalAlignment="Center">
+                            <StackPanel Grid.Column="0" Spacing="1">
+                                <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding Name}" FontSize="10.5" Opacity="0.5"
+                                           FontFamily="Cascadia Mono, Consolas"
+                                           IsVisible="{Binding HasAltId}"/>
+                            </StackPanel>
+                            <TextBlock Grid.Column="1" Text="{Binding ApiText}" VerticalAlignment="Center"
+                                       Opacity="0.85" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding ApiText}"/>
+                            <TextBlock Grid.Column="2" Text="{Binding BaseUrlText}" VerticalAlignment="Center"
+                                       FontFamily="Cascadia Mono, Consolas" FontSize="11" Opacity="0.7"
+                                       TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding BaseUrlText}"/>
+                            <TextBlock Grid.Column="3" Text="{Binding KeyText}" VerticalAlignment="Center"
+                                       FontFamily="Cascadia Mono, Consolas" FontSize="11" Opacity="0.55"
+                                       TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding KeyText}"/>
+                            <Border Grid.Column="4" Classes="badge badge-info" HorizontalAlignment="Right"
+                                    VerticalAlignment="Center" ToolTip.Tip="该服务商下的模型数">
+                                <TextBlock Text="{Binding ModelCount, StringFormat='{}{0} 模型'}"/>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <TextBlock Text="暂无服务商 —— 点「➕ 新增服务商」创建(URL + Key + 模型为一个整体条目)。"
+                       Opacity="0.5" IsVisible="{Binding !HasProviders}"/>
+
+            <!-- 选中服务商摘要 -->
+            <Border Classes="card" Padding="12,8" IsVisible="{Binding HasSelectedProvider}">
+                <TextBlock Text="{Binding ProviderSummary}" Opacity="0.75" TextWrapping="Wrap" FontSize="12"/>
+            </Border>
+
+            <!-- 模型区(选中服务商后显示) -->
+            <StackPanel Spacing="12" IsVisible="{Binding HasSelectedProvider}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="🧮 模型列表" FontWeight="SemiBold" FontSize="15"
+                               VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <Button Content="➕ 新增模型" Command="{Binding AddModelCommand}" Classes="primary"/>
+                    <Button Content="✏️ 编辑模型" Command="{Binding EditModelCommand}"/>
+                    <Button Content="🗑 删除模型" Command="{Binding RemoveModelCommand}" Classes="danger"/>
+                </StackPanel>
+
+                <!-- 模型列表:一条 = 一个整体 -->
+                <ListBox Classes="rowList"
+                         ItemsSource="{Binding Models}"
+                         SelectedItem="{Binding SelectedModel, Mode=TwoWay}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:CustomModelRowViewModel">
+                            <Grid ColumnDefinitions="240,64,110,130,160,1.8*,140" VerticalAlignment="Center">
+                                <StackPanel Grid.Column="0" Spacing="1">
+                                    <TextBlock Text="{Binding Id}" FontWeight="SemiBold" FontSize="11.5"
+                                               FontFamily="Cascadia Mono, Consolas"
+                                               TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Id}"/>
+                                    <TextBlock Text="{Binding Name}" FontSize="10.5" Opacity="0.5"
+                                               TextTrimming="CharacterEllipsis"
+                                               IsVisible="{Binding HasAltName}"/>
+                                </StackPanel>
+                                <Border Grid.Column="1" Classes="badge badge-on" HorizontalAlignment="Left"
+                                        VerticalAlignment="Center" IsVisible="{Binding Model.Reasoning}"
+                                        ToolTip.Tip="推理模型">
+                                    <TextBlock Text="推理"/>
+                                </Border>
+                                <TextBlock Grid.Column="2" Text="{Binding InputText}" FontSize="11"
+                                           Opacity="0.7" VerticalAlignment="Center"
+                                           ToolTip.Tip="输入类型"/>
+                                <TextBlock Grid.Column="3" Text="{Binding LimitsText}" FontSize="11"
+                                           FontFamily="Cascadia Mono, Consolas" Opacity="0.7"
+                                           VerticalAlignment="Center" ToolTip.Tip="上下文窗口 / 最大输出"/>
+                                <TextBlock Grid.Column="4" Text="{Binding CostText}" FontSize="11"
+                                           Opacity="0.6" VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis" ToolTip.Tip="费用($/百万 token):输入/输出/缓存读/缓存写"/>
+                                <TextBlock Grid.Column="5" Text="{Binding ParamsText}" FontSize="11"
+                                           FontFamily="Cascadia Mono, Consolas" Opacity="0.75"
+                                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                           ToolTip.Tip="{Binding ParamsText}"/>
+                                <Border Grid.Column="6" Classes="badge badge-warn" HorizontalAlignment="Right"
+                                        VerticalAlignment="Center" IsVisible="{Binding HasApiOverride}"
+                                        ToolTip.Tip="该模型覆盖了服务商默认 API">
+                                    <TextBlock Text="{Binding ApiText}"/>
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <TextBlock Text="该服务商暂无模型 —— 点「➕ 新增模型」添加。"
+                           Opacity="0.5" IsVisible="{Binding !HasModels}"/>
+            </StackPanel>
+
+            <TextBlock Text="{Binding FileHint}" Opacity="0.55" TextWrapping="Wrap"/>
+
+            <Expander Header="说明:服务商与模型字段" IsExpanded="False">
+                <TextBlock TextWrapping="Wrap" Opacity="0.7"
+                           Text="服务商 = models.json 里 providers 下的一个键:baseUrl 是 API 地址,api 是协议类型(openai-completions 适配绝大多数 OpenAI 兼容端点:Ollama / LM Studio / vLLM / llama.cpp / 各类中转),apiKey 支持明文、$ENV_VAR 环境变量、!command 命令取值。本地免鉴权服务也要填一个占位 key(pi 用它判定「已配置」)。模型的 samplingParams 在表单里手动填写 JSON(不同模型参数不同),自动拼接进文件;留空则不写入该字段,请求走服务端与 pi 的默认值。compat 用于描述端点已验证的行为差异,不要仅凭「宣称兼容」就开启。"/>
+            </Expander>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

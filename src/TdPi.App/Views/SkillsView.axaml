@@ -1,0 +1,145 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TdPi.App.ViewModels"
+             x:Class="TdPi.App.Views.SkillsView"
+             x:DataType="vm:SkillsViewModel">
+
+    <ScrollViewer>
+        <StackPanel Margin="20" Spacing="12">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="📘 技能管理" Classes="pageTitle"/>
+                <Border Classes="badge badge-info" Classes.badge-flash="{Binding Main.ProjectBadgeHighlight}"
+                        IsVisible="{Binding Main.HasProject}" ToolTip.Tip="{Binding Main.CurrentProject}">
+                    <TextBlock Text="{Binding Main.CurrentProject, StringFormat='📁 {0}'}" MaxWidth="360" TextTrimming="CharacterEllipsis"/>
+                </Border>
+            </StackPanel>
+            <TextBlock Text="技能 = 含 SKILL.md 的文件夹。全局技能对所有项目生效,项目技能放在 .pi/skills(需项目信任)。启停通过重命名 SKILL.md 实现;修改后在 pi 中 /reload 生效。"
+                       Classes="pageDesc"/>
+
+            <!-- A: 未选项目提示条 -->
+            <Border Classes="card" Padding="12,10" IsVisible="{Binding !HasProject}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <Border Classes="badge badge-warn" VerticalAlignment="Center">
+                        <TextBlock Text="⚠ 未选择项目"/>
+                    </Border>
+                    <TextBlock Text="项目技能(.pi/skills)不可见 —— 顶部选择项目,或点右侧按钮直接选。"
+                               VerticalAlignment="Center" Opacity="0.8"/>
+                    <Button Content="📁 选择项目…" Command="{Binding Main.BrowseProjectCommand}" Classes="primary"
+                            Padding="12,5" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="➕ 新建技能" Command="{Binding CreateCommand}" Classes="primary"/>
+                <Button Content="✏️ 编辑" Command="{Binding EditCommand}"/>
+                <Button Content="⏯ 启用/停用" Command="{Binding ToggleCommand}"/>
+                <Button Content="📂 打开位置" Command="{Binding OpenLocationCommand}" Classes="ghost"/>
+                <Button Content="🗑 删除" Command="{Binding DeleteCommand}" Classes="danger"/>
+                <Button Content="🔄 刷新" Command="{Binding RefreshCmdCommand}" Classes="ghost"/>
+            </StackPanel>
+
+            <!-- ============ 全局技能 ============ -->
+            <Border Classes="card" Padding="12">
+                <StackPanel Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="🌐 全局技能" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
+                        <Border Classes="badge badge-warn" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding GlobalHint}"/>
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="对所有项目生效,放在 ~/.pi/agent/skills。每个技能是一个含 SKILL.md 的文件夹。"
+                               Opacity="0.55" FontSize="11.5" TextWrapping="Wrap"/>
+                    <ListBox Classes="rowList"
+                             ItemsSource="{Binding GlobalSkills}"
+                             SelectedItem="{Binding Selected, Mode=TwoWay}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:SkillRowViewModel">
+                                <Grid ColumnDefinitions="180,1.4*,Auto,320" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Name}"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Description}" VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis" Opacity="0.85" ToolTip.Tip="{Binding Description}"/>
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                        <Border Classes="badge" Classes.badge-on="{Binding Skill.Enabled}"
+                                                Classes.badge-off="{Binding !Skill.Enabled}">
+                                            <TextBlock Text="{Binding Skill.Enabled, Converter={x:Static vm:Converters.BoolToOnOff}}"/>
+                                        </Border>
+                                        <Border Classes="badge badge-warn" IsVisible="{Binding Dmi}" ToolTip.Tip="disable-model-invocation:模型不会自动加载">
+                                            <TextBlock Text="仅手动"/>
+                                        </Border>
+                                        <Border Classes="badge badge-off" IsVisible="{Binding Invalid}" ToolTip.Tip="{Binding InvalidReason}">
+                                            <TextBlock Text="无效"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="3" Text="{Binding Directory}" VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis"
+                                               FontFamily="Cascadia Mono, Consolas" FontSize="11" Opacity="0.6"
+                                               ToolTip.Tip="{Binding Directory}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </StackPanel>
+            </Border>
+
+            <!-- ============ 项目技能 ============ -->
+            <Border Classes="card" Padding="12">
+                <StackPanel Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="📁 项目技能" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
+                        <Border Classes="badge badge-info" IsVisible="{Binding HasProject}" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding ProjectHint}"/>
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="仅当前项目生效,放在项目的 .pi/skills 或 .agents/skills。「目录」列为每个技能实际所在的位置。"
+                               Opacity="0.55" FontSize="11.5" TextWrapping="Wrap"/>
+
+                    <StackPanel IsVisible="{Binding HasProject}" Spacing="4">
+                        <TextBlock Text="项目技能目录:" FontWeight="SemiBold" FontSize="12" Opacity="0.75"/>
+                        <TextBox Text="{Binding ProjectDirs, Mode=OneWay}" IsReadOnly="True" Classes="code"
+                                 AcceptsReturn="True" TextWrapping="NoWrap" MinHeight="30" MaxHeight="70"
+                                 FontFamily="Cascadia Mono, Consolas" FontSize="11"/>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding ProjectHint}" Opacity="0.55" FontSize="12" FontStyle="Italic"
+                               IsVisible="{Binding !HasProject}"/>
+
+                    <ListBox Classes="rowList"
+                             ItemsSource="{Binding ProjectSkills}"
+                             SelectedItem="{Binding Selected, Mode=TwoWay}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:SkillRowViewModel">
+                                <Grid ColumnDefinitions="180,1.4*,Auto,Auto,300" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Name}"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Description}" VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis" Opacity="0.85" ToolTip.Tip="{Binding Description}"/>
+                                    <Border Grid.Column="2" Classes="badge badge-info" VerticalAlignment="Center"
+                                            ToolTip.Tip="{Binding Source}">
+                                        <TextBlock Text="{Binding ScopeText}"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                        <Border Classes="badge" Classes.badge-on="{Binding Skill.Enabled}"
+                                                Classes.badge-off="{Binding !Skill.Enabled}">
+                                            <TextBlock Text="{Binding Skill.Enabled, Converter={x:Static vm:Converters.BoolToOnOff}}"/>
+                                        </Border>
+                                        <Border Classes="badge badge-warn" IsVisible="{Binding Dmi}" ToolTip.Tip="disable-model-invocation:模型不会自动加载">
+                                            <TextBlock Text="仅手动"/>
+                                        </Border>
+                                        <Border Classes="badge badge-off" IsVisible="{Binding Invalid}" ToolTip.Tip="{Binding InvalidReason}">
+                                            <TextBlock Text="无效"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="4" Text="{Binding Directory}" VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis"
+                                               FontFamily="Cascadia Mono, Consolas" FontSize="11" Opacity="0.6"
+                                               ToolTip.Tip="{Binding Directory}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

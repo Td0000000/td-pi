@@ -1,0 +1,321 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TdPi.App.ViewModels"
+             x:Class="TdPi.App.Views.PresetsView"
+             x:DataType="vm:PresetsViewModel">
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="20">
+        <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,12">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="🚀 预设管理" Classes="pageTitle"/>
+                <Border Classes="badge badge-info" Classes.badge-flash="{Binding Main.ProjectBadgeHighlight}"
+                        IsVisible="{Binding Main.HasProject}" ToolTip.Tip="{Binding Main.CurrentProject}">
+                    <TextBlock Text="{Binding Main.CurrentProject, StringFormat='📁 {0}'}" MaxWidth="360" TextTrimming="CharacterEllipsis"/>
+                </Border>
+            </StackPanel>
+            <TextBlock Text="预设 = AI 身份与能力的完整设定(preset.json + 消息列表 + 可选 mcp.json),保存在当前项目的 .pi/td-pi/presets/。系统提示词注入位于系统提示词层,永不被上下文压缩;开场用户消息有意可牺牲。预设只会在「▶ 启动预设」页或命令行启动时生效。"
+                       Classes="pageDesc"/>
+
+            <!-- A: 未选项目提示条 -->
+            <Border Classes="card" Padding="12,10" IsVisible="{Binding !HasProject}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <Border Classes="badge badge-warn" VerticalAlignment="Center">
+                        <TextBlock Text="⚠ 未选择项目"/>
+                    </Border>
+                    <TextBlock Text="预设只存在于项目中 —— 请先选择项目目录,才能新建/查看预设。"
+                               VerticalAlignment="Center" Opacity="0.8"/>
+                    <Button Content="📁 选择项目…" Command="{Binding Main.BrowseProjectCommand}" Classes="primary"
+                            Padding="12,5" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <Grid Grid.Row="1" ColumnDefinitions="300,12,*">
+            <!-- 左:预设列表 -->
+            <Border Grid.Column="0" Classes="card" Padding="8">
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="6" Margin="4,4,4,8">
+                        <Button Content="➕ 新建" Command="{Binding NewCommand}" Classes="primary"/>
+                        <Button Content="⧉ 复制" Command="{Binding DuplicateCommand}"/>
+                        <Button Content="🗑 删除" Command="{Binding DeleteCommand}" Classes="danger"/>
+                        <Button Content="🔄" Command="{Binding RefreshCmdCommand}" Classes="ghost"/>
+                    </StackPanel>
+
+                    <ListBox Grid.Row="1" ItemsSource="{Binding Presets}" SelectedItem="{Binding Selected, Mode=TwoWay}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:PresetListItemViewModel">
+                                <StackPanel Margin="4,6" Spacing="2">
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding Description}" Opacity="0.6" FontSize="12"
+                                               TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+
+            <!-- 右:编辑器 + 启动 -->
+            <Grid Grid.Column="2" RowDefinitions="*,Auto">
+                <Border Grid.Row="0" Classes="card" IsVisible="{Binding HasEditor}" Padding="12">
+                    <TabControl SelectedIndex="0">
+                        <!-- Tab: 基本 -->
+                        <TabItem Header="基本">
+                            <ScrollViewer>
+                                <StackPanel Spacing="10" Margin="4,10">
+                                    <Grid ColumnDefinitions="110,10,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="所属项目" VerticalAlignment="Center"/>
+                                        <StackPanel Grid.Row="0" Grid.Column="2" Spacing="6">
+                                            <TextBox Text="{Binding Main.CurrentProject, Mode=OneWay}" IsReadOnly="True"
+                                                     FontFamily="Cascadia Mono, Consolas" FontSize="12" MinWidth="360"/>
+                                            <TextBlock Text="预设只存在于项目中(.pi/td-pi/presets/);要移动到其它项目可复制后重建。"
+                                                       Opacity="0.5" FontSize="11.5" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="预设名" VerticalAlignment="Center" Margin="0,10,0,0"/>
+                                        <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding Editor.Name}" Margin="0,10,0,0" Watermark="reviewer"/>
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="描述" VerticalAlignment="Center" Margin="0,10,0,0"/>
+                                        <TextBox Grid.Row="2" Grid.Column="2" Text="{Binding Editor.Description}" Margin="0,10,0,0"
+                                                 Watermark="一句话说明这个 AI 的身份"/>
+                                        <TextBlock Grid.Row="3" Grid.Column="0" Text="会话名" VerticalAlignment="Center" Margin="0,10,0,0"/>
+                                        <TextBox Grid.Row="3" Grid.Column="2" Text="{Binding Editor.SessionName}" Margin="0,10,0,0"
+                                                 Watermark="-n 显示名(留空=预设名)"/>
+                                        <TextBlock Grid.Row="4" Grid.Column="0" Text="开场消息" VerticalAlignment="Top" Margin="0,10,0,0"/>
+                                        <TextBox Grid.Row="4" Grid.Column="2" Text="{Binding Editor.OpeningMessage}" Margin="0,10,0,0"
+                                                 AcceptsReturn="True" MinHeight="64"
+                                                 Watermark="启动后立即发送的用户消息。注意:它在对话区,会被压缩 —— 关键信息永远不要放这里(留空=不发送)"/>
+                                    </Grid>
+                                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,10,0,0">
+                                        <Button Content="📂 打开预设文件夹" Command="{Binding Editor.OpenDirCommand}" Classes="ghost"/>
+                                        <TextBlock Text="{Binding Editor.Dir}" Opacity="0.5" FontSize="11" VerticalAlignment="Center"
+                                                   FontFamily="Cascadia Mono, Consolas" TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <!-- Tab: 消息列表(SillyTavern 式) -->
+                        <TabItem Header="✉ 消息列表">
+                            <ScrollViewer>
+                                <StackPanel Spacing="10" Margin="4,10">
+                                    <TextBlock Text="上下文填充消息" Classes="sectionTitle"/>
+                                    <TextBlock Text="每条消息可自由编辑、调序、单独开关。系统消息 → 系统提示词层;用户/AI 消息 → 上下文消息,每次请求重新拼接到对话之前。三类注入均不写入会话条目,永远不会被上下文压缩。"
+                                               Opacity="0.6" FontSize="12" TextWrapping="Wrap"/>
+
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Button Content="＋ 系统消息" Command="{Binding Editor.AddMessageCommand}" CommandParameter="system" Classes="primary" Padding="12,5"/>
+                                        <Button Content="＋ 用户消息" Command="{Binding Editor.AddMessageCommand}" CommandParameter="user" Padding="12,5"/>
+                                        <Button Content="＋ AI 消息" Command="{Binding Editor.AddMessageCommand}" CommandParameter="assistant" Padding="12,5"/>
+                                    </StackPanel>
+
+                                    <ItemsControl ItemsSource="{Binding Editor.MessageRows}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:MessageRowViewModel">
+                                                <Border Classes="card" Padding="10" Margin="0,2" BorderThickness="1">
+                                                    <Border.Styles>
+                                                        <Style Selector="Border.card.sys">
+                                                            <Setter Property="BorderBrush" Value="#89b4fa"/>
+                                                        </Style>
+                                                        <Style Selector="Border.card.usr">
+                                                            <Setter Property="BorderBrush" Value="#a6e3a1"/>
+                                                        </Style>
+                                                        <Style Selector="Border.card.ai">
+                                                            <Setter Property="BorderBrush" Value="#cba6f7"/>
+                                                        </Style>
+                                                    </Border.Styles>
+                                                    <StackPanel Spacing="6">
+                                                        <!-- 行头:角色徽章 + 角色选择 + 标题 + 开关 + 操作 -->
+                                                        <Grid ColumnDefinitions="64,150,*,Auto,Auto,Auto,Auto,Auto">
+                                                            <Border Grid.Column="0" Classes="rolebadge" Classes.sys="{Binding IsSystem}"
+                                                                    Classes.usr="{Binding IsUser}" Classes.ai="{Binding IsAssistant}"
+                                                                    VerticalAlignment="Center">
+                                                                <TextBlock Text="{Binding RoleDisplay}" FontSize="12"/>
+                                                            </Border>
+                                                            <ComboBox Grid.Column="1" ItemsSource="{x:Static vm:MessageRowViewModel.Roles}" 
+                                                                      SelectedItem="{Binding Role}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                                            <TextBox Grid.Column="2" Text="{Binding Label}" Watermark="标题(可选)" Margin="8,0,0,0"
+                                                                     VerticalAlignment="Center"/>
+                                                            <CheckBox Grid.Column="3" IsChecked="{Binding Enabled}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                                            <Button Grid.Column="4" Content="⤢" Command="{Binding ExpandCommand}" Classes="ghost" Padding="8,4" Margin="6,0,0,0"/>
+                                                            <Button Grid.Column="5" Content="↑" Command="{Binding MoveUpCommand}" Classes="ghost" Padding="8,4" Margin="6,0,0,0"/>
+                                                            <Button Grid.Column="6" Content="↓" Command="{Binding MoveDownCommand}" Classes="ghost" Padding="8,4" Margin="6,0,0,0"/>
+                                                            <Button Grid.Column="7" Content="✖" Command="{Binding RemoveCommand}" Classes="danger" Padding="8,4" Margin="6,0,0,0"/>
+                                                        </Grid>
+                                                        <!-- 内容:直接编辑 -->
+                                                        <TextBox Text="{Binding Content}" AcceptsReturn="True" TextWrapping="Wrap"
+                                                                 MinHeight="48" MaxHeight="160" FontSize="12.5"
+                                                                 Watermark="消息内容 —— 在这里自由编辑..."/>
+                                                        <TextBlock Text="{Binding ImmunityNote}" Opacity="0.5" FontSize="11"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <TextBlock Text="{Binding Editor.MessageRows.Count, StringFormat='共 {0} 条消息'}" Opacity="0.55" FontSize="12"/>
+                                    <TextBlock Text="提示:顺序即注入顺序。用户消息与 AI 消息交替排列即形成字面对话轮次(few-shot);标记为关闭的条目保留但不注入。开场消息(「基本」页)是真实首条消息,位于对话区,可被压缩 —— 有意设计。"
+                                               Opacity="0.5" FontSize="11.5" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <!-- Tab: 上下文预览(完整视图:提示词 → 能力 → 对话) -->
+                        <TabItem Header="上下文预览">
+                            <ScrollViewer>
+                                <StackPanel Spacing="12" Margin="4,10">
+                                    <TextBlock Text="本预设启动后,模型能看到的全部信息(随编辑实时更新):① 系统提示词(系统消息原文,无任何附加内容)→ ② 能感知到的工具 / MCP / 技能 / 扩展 → ③ 上下文信息。“不会写入会话”的注入永远不被压缩 —— 压缩只作用于会话条目。"
+                                               Opacity="0.6" FontSize="12" TextWrapping="Wrap"/>
+                                    <Border Classes="badge badge-on" HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding ContextSummary}"/>
+                                    </Border>
+
+                                    <TextBlock Text="① 系统提示词(系统消息原文,永不压缩)" Classes="sectionTitle"/>
+                                    <Border Classes="badge badge-on" HorizontalAlignment="Left">
+                                        <TextBlock Text="压缩免疫:系统提示词永不参与压缩,你填什么就注入什么,无任何附加内容"/>
+                                    </Border>
+                                    <TextBox Text="{Binding SystemBlockPreview, Mode=OneWay}" Classes="code" IsReadOnly="True"
+                                             AcceptsReturn="True" TextWrapping="NoWrap" MinHeight="160" MaxHeight="300"/>
+
+                                    <TextBlock Text="② 能感知到的能力(工具 / MCP / 技能 / 扩展 —— 环境项取当前项目,预设项叠加在环境之上)" Classes="sectionTitle"/>
+
+                                    <TextBlock Text="🔌 MCP 服务器" FontWeight="SemiBold" FontSize="13" Opacity="0.85"/>
+                                    <TextBlock Text="{Binding McpSummary}" Opacity="0.7" FontSize="12" TextWrapping="Wrap"/>
+                                    <ItemsControl ItemsSource="{Binding McpExposure}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:ExposureItemViewModel">
+                                                <Grid ColumnDefinitions="150,90,*" Margin="0,2">
+                                                    <TextBlock Grid.Column="0" Text="{Binding Name}" FontFamily="Cascadia Mono, Consolas" FontSize="12.5"/>
+                                                    <Border Grid.Column="1" Classes="badge" Classes.badge-on="{Binding StatusOn}"
+                                                            Classes.badge-off="{Binding StatusOff}"
+                                                            Classes.badge-info="{Binding StatusInfo}"
+                                                            Classes.badge-warn="{Binding StatusWarn}">
+                                                        <TextBlock Text="{Binding StatusText}"/>
+                                                    </Border>
+                                                    <TextBlock Grid.Column="2" Text="{Binding Detail}" Opacity="0.6" FontSize="12"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <TextBlock Text="📘 技能" FontWeight="SemiBold" FontSize="13" Opacity="0.85"/>
+                                    <TextBlock Text="{Binding SkillsSummary}" Opacity="0.7" FontSize="12" TextWrapping="Wrap"/>
+                                    <ItemsControl ItemsSource="{Binding SkillExposure}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:ExposureItemViewModel">
+                                                <Grid ColumnDefinitions="150,90,*" Margin="0,2">
+                                                    <TextBlock Grid.Column="0" Text="{Binding Name}" FontFamily="Cascadia Mono, Consolas" FontSize="12.5"/>
+                                                    <Border Grid.Column="1" Classes="badge" Classes.badge-on="{Binding StatusOn}"
+                                                            Classes.badge-off="{Binding StatusOff}"
+                                                            Classes.badge-info="{Binding StatusInfo}"
+                                                            Classes.badge-warn="{Binding StatusWarn}">
+                                                        <TextBlock Text="{Binding StatusText}"/>
+                                                    </Border>
+                                                    <TextBlock Grid.Column="2" Text="{Binding Detail}" Opacity="0.6" FontSize="12"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <TextBlock Text="🧩 扩展" FontWeight="SemiBold" FontSize="13" Opacity="0.85"/>
+                                    <ItemsControl ItemsSource="{Binding ExtensionExposure}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:ExposureItemViewModel">
+                                                <Grid ColumnDefinitions="150,90,*" Margin="0,2">
+                                                    <TextBlock Grid.Column="0" Text="{Binding Name}" FontFamily="Cascadia Mono, Consolas" FontSize="12.5"/>
+                                                    <Border Grid.Column="1" Classes="badge" Classes.badge-on="{Binding StatusOn}"
+                                                            Classes.badge-off="{Binding StatusOff}"
+                                                            Classes.badge-info="{Binding StatusInfo}"
+                                                            Classes.badge-warn="{Binding StatusWarn}">
+                                                        <TextBlock Text="{Binding StatusText}"/>
+                                                    </Border>
+                                                    <TextBlock Grid.Column="2" Text="{Binding Detail}" Opacity="0.6" FontSize="12"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <TextBlock Text="③ 上下文信息" Classes="sectionTitle"/>
+                                    <ItemsControl ItemsSource="{Binding ContextPreviewRows}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:PreviewMessageRowViewModel">
+                                                <Border Classes="previewrow" Classes.sys="{Binding IsSystem}" Classes.usr="{Binding IsUser}"
+                                                        Classes.ai="{Binding IsAssistant}" Classes.real="{Binding IsReal}" Classes.marker="{Binding IsMarker}"
+                                                        Padding="10,6" Margin="0,2" CornerRadius="6">
+                                                    <Grid ColumnDefinitions="54,*,Auto" RowDefinitions="Auto,Auto">
+                                                        <Border Grid.Row="0" Grid.Column="0" Classes="rolebadge" Classes.sys="{Binding IsSystem}"
+                                                                Classes.usr="{Binding IsUser}" Classes.ai="{Binding IsAssistant}"
+                                                                Classes.real="{Binding IsReal}" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding RoleDisplay}" FontSize="12"/>
+                                                        </Border>
+                                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Content}" TextWrapping="Wrap"
+                                                                   FontSize="12.5" MaxLines="3" TextTrimming="CharacterEllipsis"/>
+                                                        <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding Note}" Opacity="0.55" FontSize="11"
+                                                                   VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <Expander Header="上下文分层图(启动后模型看到什么)" IsExpanded="False" Margin="0,4">
+                                        <TextBox IsReadOnly="True" Classes="code" AcceptsReturn="True" MinHeight="220" TextWrapping="NoWrap" FontSize="11.5" Text="┌───────────────────────────────┐
+│ ① 系统提示词区(永不压缩)       │
+│  pi 默认提示词                  │
+│  ← 预设注入块(td-pi 标记)    │
+│     · 系统消息逐节叠加         │
+├───────────────────────────────┤
+│ ② 能力面(本窗口固定)          │
+│  工具 / 技能 / MCP / 扩展       │
+│  ← 环境(全局+项目) + 预设叠加  │
+├───────────────────────────────┤
+│ ③ 对话区                       │
+│  ← 上下文消息(user/AI,每请求  │
+│     重拼,不在会话里,永不压缩) │
+│  ← 开场消息(真实,可牺牲)     │
+│  ← 真实对话 / 工具调用(可压缩)│
+│  ← 压缩后的 summary(如有)    │
+└───────────────────────────────┘"/>
+                                    </Expander>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
+                    </TabControl>
+                </Border>
+
+                <!-- 未选择预设 -->
+                <Border Grid.Row="0" Classes="card" IsVisible="{Binding !HasEditor}" Padding="24">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8">
+                        <TextBlock Text="← 在左侧选择或新建一个预设" Opacity="0.5" FontSize="15"/>
+                        <TextBlock Text="预设 = 系统提示词注入 + AI消息示例 + 开场消息 + 工具/MCP/技能暴露控制" Opacity="0.35" FontSize="12"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- 命令行启动预览面板 -->
+                <Border Grid.Row="1" Classes="card" Margin="0,12,0,0" Padding="12" IsVisible="{Binding HasSelected}">
+                    <StackPanel Spacing="8">
+                        <Grid ColumnDefinitions="*,Auto,Auto">
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
+                                <TextBlock Text="⌨ 命令行启动" FontWeight="Bold" VerticalAlignment="Center"/>
+                                <TextBlock Text="或到「▶ 启动预设」页一键启动" Opacity="0.55" FontSize="12" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Button Grid.Column="1" Content="📋 复制命令" Command="{Binding CopyCmdCommand}" Classes="ghost" Margin="0,0,8,0"/>
+                            <Button Grid.Column="2" Content="💾 保存预设" Command="{Binding Editor.SaveCommand}" Classes="ghost"
+                                    IsVisible="{Binding HasEditor}"/>
+                        </Grid>
+                        <TextBox Text="{Binding LaunchPreview, Mode=OneWay}" Classes="code" IsReadOnly="True"
+                                 AcceptsReturn="True" MinHeight="52" MaxHeight="90"
+                                 FontFamily="Cascadia Mono, Consolas"/>
+                        <TextBlock Text="{Binding LaunchWarnings}" Foreground="#f9e2af" TextWrapping="Wrap" FontSize="12"
+                                   IsVisible="{Binding HasLaunchWarnings}"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <TextBlock Grid.Row="2" Text="提示:预设的启动入口在「▶ 启动预设」页(自动进入项目目录);也可复制上面的命令到任意终端手动启动。会话内不支持切换预设。"
+                   Opacity="0.5" FontSize="12" Margin="0,10,0,0" TextWrapping="Wrap"/>
+    </Grid>
+</UserControl>

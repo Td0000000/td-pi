@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="TdPi.App.App"
+             RequestedThemeVariant="Dark">
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+
+        <!-- 品牌色 -->
+        <Style Selector="TextBlock.brand">
+            <Setter Property="Foreground" Value="#7aa2f7"/>
+        </Style>
+
+        <!-- 顶栏 -->
+        <Style Selector="Border.topbar">
+            <Setter Property="Background" Value="#181825"/>
+            <Setter Property="BorderBrush" Value="#313244"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        </Style>
+
+        <!-- 侧边栏 -->
+        <Style Selector="Border.sidebar">
+            <Setter Property="Background" Value="#181825"/>
+            <Setter Property="BorderBrush" Value="#313244"/>
+            <Setter Property="BorderThickness" Value="0,0,1,0"/>
+        </Style>
+
+        <Style Selector="Button.navitem">
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        <Style Selector="Button.navitem:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#1e1e2e"/>
+        </Style>
+
+        <Style Selector="Button.nav">
+            <Setter Property="Padding" Value="14,6"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <Style Selector="Button.ghost">
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="#45475a"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <Style Selector="Button.primary">
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="Background" Value="#7aa2f7"/>
+            <Setter Property="Foreground" Value="#11111b"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#89b4fa"/>
+        </Style>
+
+        <Style Selector="Button.danger">
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Foreground" Value="#f38ba8"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="#f38ba8"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <!-- 卡片 -->
+        <Style Selector="Border.card">
+            <Setter Property="Background" Value="#1e1e2e"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="BorderBrush" Value="#313244"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <!-- 页面标题 -->
+        <Style Selector="TextBlock.pageTitle">
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+        <Style Selector="TextBlock.pageDesc">
+            <Setter Property="Opacity" Value="0.65"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+        <Style Selector="TextBlock.sectionTitle">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,8,0,6"/>
+        </Style>
+
+        <!-- 徽章 -->
+        <Style Selector="Border.badge">
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="6,1"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Border.badge-on">
+            <Setter Property="Background" Value="#2a3b31"/>
+            <Setter Property="BorderBrush" Value="#a6e3a1"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="Border.badge-on TextBlock">
+            <Setter Property="Foreground" Value="#a6e3a1"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+        <Style Selector="Border.badge-off">
+            <Setter Property="Background" Value="#3b2a30"/>
+            <Setter Property="BorderBrush" Value="#f38ba8"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="Border.badge-off TextBlock">
+            <Setter Property="Foreground" Value="#f38ba8"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+        <Style Selector="Border.badge-info">
+            <Setter Property="Background" Value="#26283c"/>
+            <Setter Property="BorderBrush" Value="#89b4fa"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="Border.badge-info TextBlock">
+            <Setter Property="Foreground" Value="#89b4fa"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+        <Style Selector="Border.badge-warn">
+            <Setter Property="Background" Value="#3b3526"/>
+            <Setter Property="BorderBrush" Value="#f9e2af"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="Border.badge-warn TextBlock">
+            <Setter Property="Foreground" Value="#f9e2af"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+        <!-- 项目切换时徽章高亮(短暂) -->
+        <Style Selector="Border.badge-flash">
+            <Setter Property="Background" Value="#4a3d55"/>
+            <Setter Property="BorderBrush" Value="#f5c2e7"/>
+        </Style>
+        <Style Selector="Border.badge-flash TextBlock">
+            <Setter Property="Foreground" Value="#f5c2e7"/>
+        </Style>
+
+        <!-- 代码文本 -->
+        <Style Selector="TextBox.code">
+            <Setter Property="FontFamily" Value="Cascadia Mono, Consolas"/>
+            <Setter Property="FontSize" Value="12.5"/>
+        </Style>
+
+        <!-- 角色徽章(消息列表/预览) -->
+        <Style Selector="Border.rolebadge">
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="8,3"/>
+            <Setter Property="MinWidth" Value="52"/>
+        </Style>
+        <Style Selector="Border.rolebadge.sys">
+            <Setter Property="Background" Value="#26283c"/>
+            <Setter Property="BorderBrush" Value="#89b4fa"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="Border.rolebadge.sys TextBlock">
+            <Setter Property="Foreground" Value="#89b4fa"/>
+        </Style>
+        <Style Selector="Border.rolebadge.usr">
+            <Setter Property="Background" Value="#2a3b31"/>
+            <Setter Property="BorderBrush" Value="#a6e3a1"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="Border.rolebadge.usr TextBlock">
+            <Setter Property="Foreground" Value="#a6e3a1"/>
+        </Style>
+        <Style Selector="Border.rolebadge.ai">
+            <Setter Property="Background" Value="#322a3e"/>
+            <Setter Property="BorderBrush" Value="#cba6f7"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="Border.rolebadge.ai TextBlock">
+            <Setter Property="Foreground" Value="#cba6f7"/>
+        </Style>
+        <Style Selector="Border.rolebadge.real">
+            <Setter Property="Background" Value="#3b3526"/>
+            <Setter Property="BorderBrush" Value="#f9e2af"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style Selector="Border.rolebadge.real TextBlock">
+            <Setter Property="Foreground" Value="#f9e2af"/>
+        </Style>
+
+        <!-- 预览行背景 -->
+        <Style Selector="Border.previewrow">
+            <Setter Property="Background" Value="#1e1e2e"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#313244"/>
+        </Style>
+        <Style Selector="Border.previewrow.sys">
+            <Setter Property="BorderBrush" Value="#45506e"/>
+        </Style>
+        <Style Selector="Border.previewrow.usr">
+            <Setter Property="BorderBrush" Value="#43604a"/>
+        </Style>
+        <Style Selector="Border.previewrow.ai">
+            <Setter Property="BorderBrush" Value="#58466e"/>
+        </Style>
+        <Style Selector="Border.previewrow.real">
+            <Setter Property="BorderBrush" Value="#6e5f3f"/>
+        </Style>
+        <Style Selector="Border.previewrow.marker">
+            <Setter Property="Background" Value="#16161e"/>
+            <Setter Property="BorderBrush" Value="#313244"/>
+            <Setter Property="Opacity" Value="0.75"/>
+        </Style>
+
+        <!-- 列表整行样式:一行 = 一个点击整体(技能/MCP/插件/会话/自定义模型 列表共用)。 -->
+        <Style Selector="ListBox.rowList">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+        </Style>
+        <Style Selector="ListBox.rowList ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Padding" Value="12,9"/>
+            <Setter Property="MinHeight" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+        </Style>
+        <Style Selector="ListBox.rowList ListBoxItem /template/ ContentPresenter">
+            <Setter Property="Background" Value="#181825"/>
+        </Style>
+        <Style Selector="ListBox.rowList ListBoxItem:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#1e1e2e"/>
+        </Style>
+        <Style Selector="ListBox.rowList ListBoxItem:selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="#26283c"/>
+        </Style>
+    </Application.Styles>
+</Application>

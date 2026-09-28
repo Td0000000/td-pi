@@ -1,0 +1,92 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TdPi.App.ViewModels"
+             x:Class="TdPi.App.Views.McpView"
+             x:DataType="vm:McpViewModel">
+
+    <ScrollViewer>
+        <StackPanel Margin="20" Spacing="12">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="🔌 MCP 管理" Classes="pageTitle"/>
+                <Border Classes="badge badge-info" Classes.badge-flash="{Binding Main.ProjectBadgeHighlight}"
+                        IsVisible="{Binding Main.HasProject}" ToolTip.Tip="{Binding Main.CurrentProject}">
+                    <TextBlock Text="{Binding Main.CurrentProject, StringFormat='📁 {0}'}" MaxWidth="360" TextTrimming="CharacterEllipsis"/>
+                </Border>
+            </StackPanel>
+            <TextBlock Text="MCP 服务器由 pi-mcp-adapter 扩展提供(一个 mcp 代理工具,按需连接,不占上下文)。此处管理的配置与 /mcp-adapter 命令互通:共享文件(~/.config/mcp/mcp.json、.mcp.json)+ 适配器覆盖层(启停写入,不改共享文件)。修改后需重启 pi 或 /reload。"
+                       Classes="pageDesc"/>
+
+            <!-- A: 未选项目提示条 -->
+            <Border Classes="card" Padding="12,10" IsVisible="{Binding !HasProject}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <Border Classes="badge badge-warn" VerticalAlignment="Center">
+                        <TextBlock Text="⚠ 未选择项目"/>
+                    </Border>
+                    <TextBlock Text="项目级 MCP 服务器(.mcp.json / .pi/mcp-adapter.json)不可见 —— 全局服务器仍正常显示。"
+                               VerticalAlignment="Center" Opacity="0.8"/>
+                    <Button Content="📁 选择项目…" Command="{Binding Main.BrowseProjectCommand}" Classes="primary"
+                            Padding="12,5" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
+            <!-- 适配器状态 -->
+            <Border Classes="card">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Border Classes="badge" Classes.badge-on="{Binding AdapterInstalled}"
+                            Classes.badge-off="{Binding !AdapterInstalled}">
+                        <TextBlock Text="{Binding AdapterInstalled, Converter={x:Static vm:Converters.BoolToOnOff}}"/>
+                    </Border>
+                    <TextBlock Text="{Binding AdapterStatus}" VerticalAlignment="Center" Opacity="0.8"/>
+                    <Button Content="安装 pi-mcp-adapter" Command="{Binding InstallAdapterCommand}"
+                            Classes="ghost" IsVisible="{Binding !AdapterInstalled}"/>
+                    <Button Content="更新" Command="{Binding UpdateAdapterCommand}"
+                            Classes="ghost" IsVisible="{Binding AdapterInstalled}"/>
+                </StackPanel>
+            </Border>
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="➕ 新增服务器" Command="{Binding AddCommand}" Classes="primary"/>
+                <Button Content="✏️ 编辑" Command="{Binding EditCommand}"/>
+                <Button Content="⏯ 启用/停用" Command="{Binding ToggleCommand}"/>
+                <Button Content="🗑 移除" Command="{Binding RemoveCommand}" Classes="danger"/>
+                <Button Content="📂 配置文件位置" Command="{Binding OpenConfigCommand}" Classes="ghost"/>
+                <Button Content="🔄 刷新" Command="{Binding RefreshCmdCommand}" Classes="ghost"/>
+            </StackPanel>
+
+            <ListBox Classes="rowList"
+                     ItemsSource="{Binding Servers}"
+                     SelectedItem="{Binding Selected, Mode=TwoWay}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:McpServerRowViewModel">
+                        <Grid ColumnDefinitions="170,64,1.6*,84,170" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Name}"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Transport}" VerticalAlignment="Center"
+                                       FontSize="11" Opacity="0.7" ToolTip.Tip="传输类型"/>
+                            <TextBlock Grid.Column="2" Text="{Binding Summary}" VerticalAlignment="Center"
+                                       FontFamily="Cascadia Mono, Consolas" FontSize="11.5" Opacity="0.8"
+                                       TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Summary}"/>
+                            <Border Grid.Column="3" Classes="badge" Classes.badge-on="{Binding Enabled}"
+                                    Classes.badge-off="{Binding Disabled}" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Enabled, Converter={x:Static vm:Converters.BoolToOnOff}}"/>
+                            </Border>
+                            <Border Grid.Column="4" Classes="badge" Classes.badge-info="{Binding FromProject}"
+                                    Classes.badge-warn="{Binding !FromProject}" HorizontalAlignment="Right"
+                                    VerticalAlignment="Center" ToolTip.Tip="{Binding SourceFile}">
+                                <TextBlock Text="{Binding SourceScope}" TextTrimming="CharacterEllipsis"/>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <Expander Header="说明:配置层与优先级" IsExpanded="False">
+                <TextBlock TextWrapping="Wrap" Opacity="0.7" Text="优先级从低到高:① ~/.config/mcp/mcp.json(全局共享) ② ~/.agents/mcp.json ③ ~/.agents/mcp/mcp.json ④ ~/.pi/agent/mcp-adapter.json(全局覆盖,启停写这里) ⑤ .mcp.json(项目共享) ⑥ .pi/mcp-adapter.json(项目覆盖,最高)。同名服务器按层替换;全局服务器的启停写全局层,项目服务器写项目层。预设可以通过自己的 mcp.json(--mcp-config)为单个窗口叠加专属服务器或覆盖禁用。"/>
+            </Expander>
+
+            <TextBox Text="{Binding CliOutput, Mode=OneWay}" Classes="code" IsReadOnly="True"
+                     MinHeight="80" MaxHeight="200" AcceptsReturn="True"
+                     IsVisible="{Binding HasCliOutput}"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

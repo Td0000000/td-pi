@@ -1,0 +1,84 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TdPi.App.ViewModels"
+             x:Class="TdPi.App.Views.PluginsView"
+             x:DataType="vm:PluginsViewModel">
+
+    <ScrollViewer>
+        <StackPanel Margin="20" Spacing="12">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="🧩 插件管理" Classes="pageTitle"/>
+                <Border Classes="badge badge-info" Classes.badge-flash="{Binding Main.ProjectBadgeHighlight}"
+                        IsVisible="{Binding Main.HasProject}" ToolTip.Tip="{Binding Main.CurrentProject}">
+                    <TextBlock Text="{Binding Main.CurrentProject, StringFormat='📁 {0}'}" MaxWidth="360" TextTrimming="CharacterEllipsis"/>
+                </Border>
+            </StackPanel>
+            <TextBlock Text="Pi 包(extensions/skills/prompts/themes 的组合发行单位)与本地扩展。包的启停通过对象形式的空资源过滤实现(保持安装,便于更新);本地扩展通过 .disabled 后缀重命名。修改后重启 pi 或 /reload 生效。"
+                       Classes="pageDesc"/>
+
+            <!-- A: 未选项目提示条 -->
+            <Border Classes="card" Padding="12,10" IsVisible="{Binding !HasProject}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <Border Classes="badge badge-warn" VerticalAlignment="Center">
+                        <TextBlock Text="⚠ 未选择项目"/>
+                    </Border>
+                    <TextBlock Text="项目级插件(.pi/settings.json)不可见 —— 全局插件仍正常显示。"
+                               VerticalAlignment="Center" Opacity="0.8"/>
+                    <Button Content="📁 选择项目…" Command="{Binding Main.BrowseProjectCommand}" Classes="primary"
+                            Padding="12,5" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="➕ 安装包" Command="{Binding InstallCommand}" Classes="primary"/>
+                <Button Content="⏯ 启用/停用" Command="{Binding ToggleCommand}"/>
+                <Button Content="⬆ 更新" Command="{Binding UpdateCommand}"/>
+                <Button Content="🧹 卸载" Command="{Binding UninstallCommand}" Classes="danger"/>
+                <Button Content="↻ 更新全部" Command="{Binding UpdateAllCommand}" Classes="ghost"/>
+                <Button Content="📂 打开位置" Command="{Binding OpenLocationCommand}" Classes="ghost"/>
+                <Button Content="🔄 刷新" Command="{Binding RefreshCmdCommand}" Classes="ghost"/>
+            </StackPanel>
+
+            <ListBox Classes="rowList"
+                     ItemsSource="{Binding Plugins}"
+                     SelectedItem="{Binding Selected, Mode=TwoWay}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PluginRowViewModel">
+                        <Grid ColumnDefinitions="190,90,60,110,1.4*,1.2*" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Name}"/>
+                            <TextBlock Grid.Column="1" Text="{Binding KindText}" VerticalAlignment="Center"
+                                       FontSize="11.5" Opacity="0.8"/>
+                            <TextBlock Grid.Column="2" Text="{Binding ScopeText}" VerticalAlignment="Center"
+                                       FontSize="11.5" Opacity="0.7"/>
+                            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                <Border Classes="badge" Classes.badge-on="{Binding Enabled}"
+                                        Classes.badge-off="{Binding !Enabled}">
+                                    <TextBlock Text="{Binding Enabled, Converter={x:Static vm:Converters.BoolToOnOff}}"/>
+                                </Border>
+                                <Border Classes="badge badge-warn" IsVisible="{Binding Partial}" ToolTip.Tip="包资源被部分过滤">
+                                    <TextBlock Text="部分"/>
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Grid.Column="4" Text="{Binding Detail}" VerticalAlignment="Center"
+                                       Opacity="0.75" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Detail}"/>
+                            <TextBlock Grid.Column="5" Text="{Binding Source}" VerticalAlignment="Center"
+                                       FontFamily="Cascadia Mono, Consolas" FontSize="11" Opacity="0.55"
+                                       TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Source}"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <TextBlock Text="{Binding EmptyHint}" Opacity="0.55" TextWrapping="Wrap"/>
+
+            <Expander Header="说明:三种插件形态" IsExpanded="False">
+                <TextBlock TextWrapping="Wrap" Opacity="0.7" Text="① Pi 包 —— settings.json 的 packages[],来源 npm:/git:/本地路径,可含扩展、技能、模板、主题。用「安装包」按钮或 pi install 命令安装。② 本地扩展 —— 直接放在 extensions/ 目录的 .ts/.js 文件或含 index.ts 的文件夹。③ settings extensions[] 路径条目 —— 全局或项目 settings 里声明的扩展路径,启停用 +/- 前缀。"/>
+            </Expander>
+
+            <TextBox Text="{Binding CliOutput, Mode=OneWay}" Classes="code" IsReadOnly="True"
+                     MinHeight="80" MaxHeight="220" AcceptsReturn="True"
+                     IsVisible="{Binding HasCliOutput}"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

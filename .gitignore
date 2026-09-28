@@ -1,0 +1,22 @@
+# Build outputs
+bin/
+obj/
+publish/
+*.user
+
+# Rider / VS
+.idea/
+.vs/
+*.suo
+
+# Node (extension dev)
+node_modules/
+__pycache__/
+*.pyc
+
+# Runtime artifacts
+*.log
+
+# 本地发布/打包产物
+dist/
+*.zip

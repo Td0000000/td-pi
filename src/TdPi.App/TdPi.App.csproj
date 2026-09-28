@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <AssemblyName>td-pi</AssemblyName>
+    <RootNamespace>TdPi.App</RootNamespace>
+    <Version>1.4.1</Version>
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.7" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.7" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.7" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.3.7" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <ProjectReference Include="..\TdPi.Core\TdPi.Core.csproj" />
+  </ItemGroup>
+
+  <!-- 扩展内嵌资源已移至 TdPi.Core.csproj(与 ExtensionDeployer 同程序集,GetExecutingAssembly 才能读到) -->
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\AppIcon.ico" />
+    <AvaloniaResource Include="Assets\icon-16.png" />
+    <AvaloniaResource Include="Assets\icon-32.png" />
+    <AvaloniaResource Include="Assets\icon-48.png" />
+    <AvaloniaResource Include="Assets\icon-256.png" />
+  </ItemGroup>
+
+</Project>
